@@ -87,3 +87,125 @@ plt.xlabel('Year')
 plt.xticks(rotation=45)
 plt.legend()
 plt.show()
+
+
+# Extend the DataFrame to include the years 2023 and 2024
+df_extended = df.copy()
+df_extended = df_extended.append({'Year': '2023', 'Revenue_Growth': None}, ignore_index=True)
+df_extended = df_extended.append({'Year': '2024', 'Revenue_Growth': None}, ignore_index=True)
+
+# Assuming 'Revenue_Growth' is in percentage and indexed by 'Year'
+revenue_growth_data = df_extended.set_index('Year')['Revenue_Growth']
+
+# Model the time series with Exponential Smoothing
+model_extended = ExponentialSmoothing(revenue_growth_data, trend="add", seasonal="add", seasonal_periods=4).fit()
+
+# Forecast the revenue growth for 2023 and 2024
+forecast_2023 = model_extended.forecast(1)
+forecast_2024 = model_extended.forecast(2)
+
+# Update the DataFrame with forecasted revenue growth for 2023 and 2024
+df_extended.loc[df_extended['Year'] == '2023', 'Revenue_Growth'] = forecast_2023.values[0]
+df_extended.loc[df_extended['Year'] == '2024', 'Revenue_Growth'] = forecast_2024.values[0]
+
+# Plotting Revenue Growth Trend including forecast
+plt.figure(figsize=(12, 6))
+sns.lineplot(x='Year', y='Revenue_Growth', data=df_extended, marker='o', label='Revenue Growth (%)')
+plt.title('Yearly Revenue Growth Trend including Forecast')
+plt.ylabel('Revenue Growth (%)')
+plt.xlabel('Year')
+plt.xticks(rotation=45)
+plt.legend()
+plt.show()
+
+# Print the forecasted revenue growth for 2023 and 2024
+print("Forecasted Revenue Growth for 2023:", forecast_2023.values[0])
+print("Forecasted Revenue Growth for 2024:", forecast_2024.values[0])
+
+
+import pandas as pd
+from statsmodels.tsa.api import ExponentialSmoothing
+
+# Recreating the DataFrame with the necessary data
+data = {
+    'Year': ['2020', '2021', '2022', '2023_9M'],
+    'Total_Revenues': [327413, 497876, 739012, 711653],  # in thousands
+}
+
+df = pd.DataFrame(data)
+
+# Assuming the 2023_9M value is an incomplete value for 2023, let's extrapolate to get an estimated full year value
+# Using a simple method: (711653 / 9) * 12 to estimate 2023 full year revenue
+df.at[3, 'Total_Revenues'] = (df.at[3, 'Total_Revenues'] / 9) * 12
+
+# Calculate year-over-year growth for revenues
+df['Revenue_Growth'] = df['Total_Revenues'].pct_change() * 100
+
+# Since we need to forecast for 2023 and 2024, let's correct the 'Year' for forecasting purposes
+df['Year'] = [2020, 2021, 2022, 2023]  # Correcting year for forecasting
+
+# Preparing the time series data
+revenue_data = df.set_index('Year')['Revenue_Growth'].dropna()  # Dropping NaN values for modeling
+
+# Model the time series with Exponential Smoothing
+model = ExponentialSmoothing(revenue_data, trend="add", seasonal=None).fit()
+
+# Forecast the revenue growth for the next 2 years (2024 and 2025, to get growth for 2023 and 2024)
+forecast_years = [2024, 2025]
+forecast = model.forecast(len(forecast_years))
+
+# Prepare the forecasted growth for display
+forecast_df = pd.DataFrame({'Year': forecast_years, 'Forecasted_Revenue_Growth': forecast.values})
+forecast_df
+
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Integrating forecasted data with the original DataFrame for visualization
+forecast_years = [2024, 2025]  # To align with the forecast years
+forecast_growth = [19.297977, 7.464711]  # Forecasted growth rates
+
+# Creating a new DataFrame to hold both actual and forecasted data
+df_vis = pd.concat([df[['Year', 'Revenue_Growth']].dropna(), pd.DataFrame({'Year': forecast_years, 'Revenue_Growth': forecast_growth})])
+
+# Setting seaborn style for better aesthetics
+sns.set(style="whitegrid")
+
+# Plotting Revenue Growth Trend
+plt.figure(figsize=(12, 6))
+sns.lineplot(x='Year', y='Revenue_Growth', data=df_vis, marker='o', label='Revenue Growth (%)')
+plt.axvline(x=2023, linestyle='--', color='gray', label='Forecast Start')  # Marking the start of forecasted data
+plt.title('Yearly Revenue Growth Trend with Forecast')
+plt.ylabel('Revenue Growth (%)')
+plt.xlabel('Year')
+plt.xticks(df_vis['Year'], rotation=45)
+plt.legend()
+plt.show()
+# Addressing the issue and attempting a correct visualization approach
+# Manually creating a combined DataFrame for actual and forecasted revenue growth to avoid previous errors
+
+# Existing years and their revenue growth
+years = [2020, 2021, 2022, 2023]
+revenue_growth = df['Revenue_Growth'].tolist()
+
+# Adding forecasted years and their predicted revenue growth
+years += forecast_years
+revenue_growth += forecast_growth
+
+# Creating a new DataFrame for visualization
+df_combined = pd.DataFrame({
+    'Year': years,
+    'Revenue Growth (%)': revenue_growth
+})
+
+# Plotting
+plt.figure(figsize=(12, 6))
+sns.lineplot(x='Year', y='Revenue Growth (%)', data=df_combined, marker='o')
+plt.title('Yearly Revenue Growth Trend with Forecast')
+plt.xlabel('Year')
+plt.ylabel('Revenue Growth (%)')
+plt.axvline(x=2023, color='grey', linestyle='--', label='Forecast Start')
+plt.legend()
+plt.grid(True)
+plt.show()
