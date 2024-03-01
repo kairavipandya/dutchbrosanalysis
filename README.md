@@ -1,6 +1,6 @@
 # Dutch Bros Analysis
 
-This project provides an analysis of financial and operational data for Dutch Bros Inc., a fictional company. It includes data visualization, time series forecasting, and clustering techniques to gain insights into the company's performance.
+This project provides an analysis of financial and operational data for Dutch Bros Inc. It includes data visualization, time series forecasting, and clustering techniques to gain insights into the company's performance.
 
 ## Table of Contents
 
